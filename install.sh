@@ -34,6 +34,10 @@ mkdir -p "$SYSTEMD_USER_DIR"
 echo "Cleaning up old service files..."
 rm -f "$SYSTEMD_USER_DIR/automount.service"
 rm -f "$SYSTEMD_USER_DIR/automount-failure-notify@.service"
+rm -f "$SYSTEMD_USER_DIR/auto-unmount.service"
+rm -f "$SYSTEMD_USER_DIR/auto-unmount.timer"
+rm -f "$SYSTEMD_USER_DIR/auto-unmount-warning.service"
+rm -f "$SYSTEMD_USER_DIR/auto-unmount-warning.timer"
 rm -f "$SYSTEMD_USER_DIR/ping-lxcddev.service"
 
 # Generate service file with configured paths
@@ -48,12 +52,27 @@ sed -e "s|%MOUNT_POINT%|$MOUNT_POINT|g" \
 sed "s|%SCRIPT_DIR%|$SCRIPT_DIR|g" \
     "$SCRIPT_DIR/automount-failure-notify@.service" > "$SYSTEMD_USER_DIR/automount-failure-notify@.service"
 
+# auto-unmount.service
+sed "s|%MOUNT_POINT%|$MOUNT_POINT|g" \
+    "$SCRIPT_DIR/auto-unmount.service" > "$SYSTEMD_USER_DIR/auto-unmount.service"
+
+# auto-unmount.timer
+cp "$SCRIPT_DIR/auto-unmount.timer" "$SYSTEMD_USER_DIR/auto-unmount.timer"
+
+# auto-unmount-warning.service
+sed "s|%SCRIPT_DIR%|$SCRIPT_DIR|g" \
+    "$SCRIPT_DIR/auto-unmount-warning.service" > "$SYSTEMD_USER_DIR/auto-unmount-warning.service"
+
+# auto-unmount-warning.timer
+cp "$SCRIPT_DIR/auto-unmount-warning.timer" "$SYSTEMD_USER_DIR/auto-unmount-warning.timer"
+
 echo "✓ Service files generated"
 echo ""
 
 # Make scripts executable
 echo "Making scripts executable..."
 chmod +x "$SCRIPT_DIR/notify-mount-failure.sh"
+chmod +x "$SCRIPT_DIR/notify-unmount-warning.sh"
 echo "✓ Scripts are executable"
 echo ""
 
@@ -66,12 +85,16 @@ echo ""
 # Enable and start service
 echo "Enabling service..."
 systemctl --user enable automount.service
+systemctl --user enable auto-unmount.timer
+systemctl --user enable auto-unmount-warning.timer
 echo "✓ Service enabled"
 echo ""
 
 # Start service
 echo "Starting service..."
 systemctl --user start automount.service
+systemctl --user start auto-unmount.timer
+systemctl --user start auto-unmount-warning.timer
 echo "✓ Service started"
 echo ""
 
@@ -82,6 +105,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 systemctl --user status automount.service --no-pager | head -10
 echo ""
+systemctl --user list-timers auto-unmount.timer --no-pager
+echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ Installation complete!"
 echo ""
@@ -89,6 +114,8 @@ echo "Your automount service is now running with:"
 echo "  • Automatic mount on boot after $LXC_HOSTNAME is reachable"
 echo "  • Mount point: $MOUNT_POINT"
 echo "  • Desktop notifications on failure"
+echo "  • Warning notification at 8:54 PM (5 min before unmount)"
+echo "  • Force unmount at 8:59 PM (kills Dolphin/processes using mount)"
 echo ""
 echo "⚠️  Note: Make sure $MOUNT_POINT is configured in /etc/fstab"
 echo ""

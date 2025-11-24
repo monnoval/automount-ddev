@@ -1,0 +1,6 @@
+[Unit]
+Description=Warning before auto-unmount
+
+[Service]
+Type=oneshot
+ExecStart=%SCRIPT_DIR%/notify-unmount-warning.sh

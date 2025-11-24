@@ -1,0 +1,9 @@
+[Unit]
+Description=Auto-unmount webservers at evening timer
+
+[Timer]
+OnCalendar=*-*-* 20:59:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

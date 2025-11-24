@@ -1,0 +1,9 @@
+[Unit]
+Description=Warning timer for auto-unmount (5 min before)
+
+[Timer]
+OnCalendar=*-*-* 20:54:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target
