@@ -15,7 +15,7 @@ if [ -f "$SCRIPT_DIR/config.sh" ]; then
 else
     echo "⚠️  No config.sh found, using defaults"
     MOUNT_POINT="/mnt/sites"
-    LXC_HOSTNAME="lxcddev"
+    REMOTE_HOST="lxcddev"
 fi
 
 # Systemd user directory (respects XDG_CONFIG_HOME)
@@ -24,7 +24,7 @@ SYSTEMD_USER_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 echo ""
 echo "Installing Automount DDEV systemd service..."
 echo "  Mount point: $MOUNT_POINT"
-echo "  LXC hostname: $LXC_HOSTNAME"
+echo "  Remote host: $REMOTE_HOST"
 echo ""
 
 # Create systemd user directory if it doesn't exist
@@ -45,7 +45,7 @@ echo "Generating service files from templates..."
 
 # automount.service
 sed -e "s|%MOUNT_POINT%|$MOUNT_POINT|g" \
-    -e "s|%LXC_HOSTNAME%|$LXC_HOSTNAME|g" \
+    -e "s|%REMOTE_HOST%|$REMOTE_HOST|g" \
     "$SCRIPT_DIR/automount.service" > "$SYSTEMD_USER_DIR/automount.service"
 
 # automount-failure-notify@.service
@@ -111,7 +111,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "✅ Installation complete!"
 echo ""
 echo "Your automount service is now running with:"
-echo "  • Automatic mount on boot after $LXC_HOSTNAME is reachable"
+echo "  • Automatic mount on boot after $REMOTE_HOST is reachable"
 echo "  • Mount point: $MOUNT_POINT"
 echo "  • Desktop notifications on failure"
 echo "  • Warning notification at 8:54 PM (5 min before unmount)"

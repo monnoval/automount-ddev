@@ -1,10 +1,10 @@
 # Automount DDEV
 
-Systemd user service to automatically mount webserver directories after checking LXC DDEV availability.
+Systemd user service to automatically mount remote directories after checking server availability.
 
 ## Features
 
-- **automount.service**: Checks if LXC DDEV is reachable and automatically mounts the webserver directory on boot
+- **automount.service**: Checks if remote server is reachable and automatically mounts the directory on boot
 - **Failure notifications**: Desktop notifications if mount fails
 - **ZeroTier aware**: Waits for ZeroTier to be ready before attempting mount
 
@@ -21,8 +21,8 @@ Systemd user service to automatically mount webserver directories after checking
    ```
    
    Customize these variables:
-   - `MOUNT_POINT`: Where to mount the webserver directory (must be configured in /etc/fstab)
-   - `LXC_HOSTNAME`: Hostname of your LXC DDEV container
+   - `MOUNT_POINT`: Where to mount the remote directory (must be configured in /etc/fstab)
+   - `REMOTE_HOST`: Hostname or IP of your remote server
 
 3. **Run the installation script:**
    ```bash
@@ -39,35 +39,27 @@ Systemd user service to automatically mount webserver directories after checking
 
 ## Usage
 
-### Check service status
 ```bash
+# Check service status
 systemctl --user status automount.service
-```
 
-### View logs
-```bash
+# View logs
 journalctl --user -u automount.service
-```
 
-### Restart service
-```bash
+# Restart service
 systemctl --user restart automount.service
-```
 
-### Stop service
-```bash
+# Stop service
 systemctl --user stop automount.service
-```
 
-### Disable service
-```bash
+# Disable service
 systemctl --user disable automount.service
 ```
 
 ## How It Works
 
 1. When your system boots, `automount.service` starts after ZeroTier is ready
-2. It pings the LXC DDEV container to check availability
+2. It pings the remote server to check availability
 3. If reachable and not already mounted, it mounts the directory
 4. If mount fails, you get a desktop notification
 5. The mount remains active until you log out (or permanently if lingering is enabled)
@@ -94,9 +86,9 @@ systemctl --user daemon-reload
 ## Troubleshooting
 
 ### Service won't start
-Check if the LXC container is reachable:
+Check if the remote server is reachable:
 ```bash
-ping -c 1 your-lxc-hostname
+ping -c 1 your-server-hostname
 ```
 
 ### Mount fails

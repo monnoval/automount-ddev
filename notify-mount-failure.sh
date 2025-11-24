@@ -37,8 +37,8 @@ if [ -n "$DISPLAY" ] && command -v kdialog &> /dev/null; then
 
 Your webserver files are NOT accessible!
 
-Common fix: Restart the LXC server
-  ssh ${LXC_HOSTNAME} 'sudo reboot'
+Common fix: Restart the remote server
+  ssh ${REMOTE_HOST} 'sudo reboot'
 
 Check logs with:
 journalctl --user -u automount.service" 2>/dev/null && NOTIFICATION_SENT=true
@@ -48,7 +48,7 @@ fi
 if [ "$NOTIFICATION_SENT" = false ] && [ -n "$DISPLAY" ] && command -v notify-send &> /dev/null; then
     notify-send -u critical \
         "⚠️ Automount Failed" \
-        "Failed to mount ${MOUNT_POINT:-webserver} at $TIMESTAMP\nCommon fix: ssh ${LXC_HOSTNAME} 'sudo reboot'\nCheck logs: journalctl --user -u automount.service" && NOTIFICATION_SENT=true
+        "Failed to mount ${MOUNT_POINT:-webserver} at $TIMESTAMP\nCommon fix: ssh ${REMOTE_HOST} 'sudo reboot'\nCheck logs: journalctl --user -u automount.service" && NOTIFICATION_SENT=true
 fi
 
 # Try to find the DBUS session for notification (even if not in active session)

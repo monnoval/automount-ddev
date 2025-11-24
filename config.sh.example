@@ -7,5 +7,5 @@
 # Mount point for sites (must be configured in /etc/fstab)
 MOUNT_POINT="/path/to/mount"
 
-# LXC DDEV hostname to ping
-LXC_HOSTNAME="your-lxc-hostname"
+# Remote server hostname to ping
+REMOTE_HOST="your-server-hostname"
