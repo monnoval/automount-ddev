@@ -1,0 +1,18 @@
+[Unit]
+Description=Automount webservers
+After=zerotier-one.service
+OnFailure=automount-failure-notify@%n.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+StandardOutput=journal
+StandardError=journal
+# Check if host is reachable (allow failure, will retry)
+ExecStartPre=-/usr/sbin/ping -c 1 -W 15 %LXC_HOSTNAME%
+# Check if already mounted, if not then mount
+ExecStart=/bin/bash -c 'if findmnt -M %MOUNT_POINT% >/dev/null; then echo "Already mounted"; exit 0; fi; mount %MOUNT_POINT% && echo "Mount successful" || { echo "Mount failed"; exit 1; }'
+ExecStop=-/usr/bin/umount %MOUNT_POINT%
+
+[Install]
+WantedBy=default.target

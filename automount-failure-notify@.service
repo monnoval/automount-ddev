@@ -1,0 +1,6 @@
+[Unit]
+Description=Notify on automount failure for %i
+
+[Service]
+Type=oneshot
+ExecStart=%SCRIPT_DIR%/notify-mount-failure.sh %i

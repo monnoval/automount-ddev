@@ -1,0 +1,6 @@
+# Local configuration (contains user-specific paths)
+config.sh
+
+# Failure tracking files
+automount-failures.log
+.automount-failed

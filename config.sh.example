@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# Automount DDEV Configuration
+# Copy this file to config.sh and edit to customize paths for your setup
+#
+
+# Mount point for sites (must be configured in /etc/fstab)
+MOUNT_POINT="/path/to/mount"
+
+# LXC DDEV hostname to ping
+LXC_HOSTNAME="your-lxc-hostname"
