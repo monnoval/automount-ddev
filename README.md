@@ -1,11 +1,12 @@
 # Automount DDEV
 
-Systemd user services to automatically mount webserver directories after checking LXC DDEV availability.
+Systemd user service to automatically mount webserver directories after checking LXC DDEV availability.
 
 ## Features
 
-- **ping-lxcddev.service**: Checks if the LXC DDEV container is reachable before proceeding
-- **automount.service**: Automatically mounts webserver directories when the system starts
+- **automount.service**: Checks if LXC DDEV is reachable and automatically mounts the webserver directory on boot
+- **Failure notifications**: Desktop notifications if mount fails
+- **ZeroTier aware**: Waits for ZeroTier to be ready before attempting mount
 
 ## Installation
 
@@ -20,8 +21,7 @@ Systemd user services to automatically mount webserver directories after checkin
    ```
    
    Customize these variables:
-   - `AUTOMOUNT_SCRIPT_DIR`: Path to your automount.sh script
-   - `MOUNT_POINT`: Where to mount the webserver directories
+   - `MOUNT_POINT`: Where to mount the webserver directory (must be configured in /etc/fstab)
    - `LXC_HOSTNAME`: Hostname of your LXC DDEV container
 
 3. **Run the installation script:**
@@ -42,44 +42,43 @@ Systemd user services to automatically mount webserver directories after checkin
 ### Check service status
 ```bash
 systemctl --user status automount.service
-systemctl --user status ping-lxcddev.service
 ```
 
 ### View logs
 ```bash
 journalctl --user -u automount.service
-journalctl --user -u ping-lxcddev.service
 ```
 
-### Restart services
+### Restart service
 ```bash
 systemctl --user restart automount.service
 ```
 
-### Stop services
+### Stop service
 ```bash
 systemctl --user stop automount.service
 ```
 
-### Disable services
+### Disable service
 ```bash
 systemctl --user disable automount.service
-systemctl --user disable ping-lxcddev.service
 ```
 
 ## How It Works
 
-1. When your system boots, `ping-lxcddev.service` starts and pings the LXC DDEV container
-2. If the container is reachable, `automount.service` runs your automount script
-3. The mount remains active until you log out (or permanently if lingering is enabled)
+1. When your system boots, `automount.service` starts after ZeroTier is ready
+2. It pings the LXC DDEV container to check availability
+3. If reachable and not already mounted, it mounts the directory
+4. If mount fails, you get a desktop notification
+5. The mount remains active until you log out (or permanently if lingering is enabled)
 
 ## Uninstallation
 
 ```bash
-systemctl --user stop automount.service ping-lxcddev.service
-systemctl --user disable automount.service ping-lxcddev.service
+systemctl --user stop automount.service
+systemctl --user disable automount.service
 rm ~/.config/systemd/user/automount.service
-rm ~/.config/systemd/user/ping-lxcddev.service
+rm ~/.config/systemd/user/automount-failure-notify@.service
 systemctl --user daemon-reload
 ```
 
@@ -87,25 +86,31 @@ systemctl --user daemon-reload
 
 - `config.sh.example` - Template configuration file
 - `config.sh` - Your local configuration (git-ignored)
-- `automount.service` - Systemd service template for mounting
-- `ping-lxcddev.service` - Systemd service template for network check
+- `automount.service` - Systemd service template
+- `automount-failure-notify@.service` - Failure notification service template
+- `notify-mount-failure.sh` - Notification script
 - `install.sh` - Installation script
 
 ## Troubleshooting
 
-### Services won't start
+### Service won't start
 Check if the LXC container is reachable:
 ```bash
-ping -c 1 lxcddev
+ping -c 1 your-lxc-hostname
 ```
 
 ### Mount fails
-Check the automount script exists and is executable:
+Ensure your mount point is configured in `/etc/fstab`:
 ```bash
-ls -la ~/Projects/_config/automount.sh
+grep your-mount-point /etc/fstab
 ```
 
-### Services stop when you log out
+Check the failure log:
+```bash
+cat automount-failures.log
+```
+
+### Service stops when you log out
 Enable user lingering:
 ```bash
 sudo loginctl enable-linger $USER
