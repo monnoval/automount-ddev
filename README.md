@@ -2,6 +2,23 @@
 
 Systemd user service to automatically mount remote directories after checking server availability.
 
+## Compatibility
+
+**Cross-platform compatible**: Works on Debian-based and RHEL-based distributions.
+
+All commands use portable paths (no hardcoded `/usr/bin` or `/usr/sbin`), allowing systemd to automatically resolve the correct locations across different Linux distributions.
+
+**Tested on:**
+- Debian-based: Debian, Ubuntu, Linux Mint, Pop!_OS
+- RHEL-based: AlmaLinux, Rocky Linux, RHEL, CentOS Stream, Fedora
+- Other: openSUSE, Arch Linux (likely compatible)
+
+**Requirements:**
+- systemd with user services support
+- Standard mount utilities (mount, umount, findmnt)
+- Optional: ZeroTier for VPN functionality
+- Optional: libnotify or kdialog for desktop notifications
+
 ## Features
 
 - **automount.service**: Checks if remote server is reachable and automatically mounts the directory on boot

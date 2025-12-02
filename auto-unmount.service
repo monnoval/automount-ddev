@@ -7,9 +7,9 @@ Type=oneshot
 # Kill any processes using the mount point
 ExecStartPre=/bin/bash -c 'fuser -km %MOUNT_POINT% || true'
 # Wait a moment for processes to terminate
-ExecStartPre=/usr/bin/sleep 2
+ExecStartPre=sleep 2
 # Force unmount
-ExecStart=/usr/bin/umount -f -l %MOUNT_POINT%
+ExecStart=umount -f -l %MOUNT_POINT%
 StandardOutput=journal
 StandardError=journal
 

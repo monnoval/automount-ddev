@@ -10,14 +10,14 @@ StandardOutput=journal
 StandardError=journal
 TimeoutStopSec=5
 # Wait a bit for ZeroTier network to be fully established
-ExecStartPre=/bin/sleep 3
+ExecStartPre=sleep 3
 # Check if host is reachable (allow failure, will retry)
-# Note: Using 'ping' without full path for portability (AlmaLinux: /usr/sbin/ping, Debian: /usr/bin/ping)
+# Note: Using 'ping' without full path for portability (RHEL-based: /usr/sbin/ping, Debian-based: /usr/bin/ping)
 ExecStartPre=-ping -c 1 -W 15 %REMOTE_HOST%
 # Check if already mounted, if not then mount
 ExecStart=/bin/bash -c 'if findmnt -M %MOUNT_POINT% >/dev/null; then echo "Already mounted"; exit 0; fi; mount %MOUNT_POINT% && echo "Mount successful" || { echo "Mount failed"; exit 1; }'
 # Force lazy unmount on shutdown to prevent hanging
-ExecStop=-/usr/bin/umount -l %MOUNT_POINT%
+ExecStop=-umount -l %MOUNT_POINT%
 
 [Install]
 WantedBy=default.target
