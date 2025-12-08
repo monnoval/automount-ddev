@@ -1,6 +1,7 @@
 [Unit]
 Description=Automount webservers
-After=zerotier-one.service
+After=zerotier-one.service network-online.target
+Wants=network-online.target
 OnFailure=automount-failure-notify@%n.service
 
 [Service]
@@ -9,11 +10,9 @@ RemainAfterExit=true
 StandardOutput=journal
 StandardError=journal
 TimeoutStopSec=5
-# Wait a bit for ZeroTier network to be fully established
-ExecStartPre=sleep 3
-# Check if host is reachable (allow failure, will retry)
-# Note: Using 'ping' without full path for portability (RHEL-based: /usr/sbin/ping, Debian-based: /usr/bin/ping)
-ExecStartPre=-ping -c 1 -W 15 %REMOTE_HOST%
+# Wait up to 30 seconds for host to become reachable (15 attempts × 2 second intervals)
+# Useful for WiFi connections that take time to establish
+ExecStartPre=/bin/bash -c 'for i in {1..15}; do ping -c 1 -W 2 %REMOTE_HOST% >/dev/null 2>&1 && exit 0; echo "Waiting for network... attempt $i/15"; sleep 2; done; echo "Gave up: host unreachable after 30s"; exit 1'
 # Check if already mounted, if not then mount
 ExecStart=/bin/bash -c 'if findmnt -M %MOUNT_POINT% >/dev/null; then echo "Already mounted"; exit 0; fi; mount %MOUNT_POINT% && echo "Mount successful" || { echo "Mount failed"; exit 1; }'
 # Force lazy unmount on shutdown to prevent hanging
