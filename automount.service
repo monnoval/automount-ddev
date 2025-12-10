@@ -2,6 +2,9 @@
 Description=Automount webservers
 After=zerotier-one.service network-online.target
 Wants=network-online.target
+# Stop BEFORE network goes down
+Before=network-pre.target
+Conflicts=shutdown.target
 OnFailure=automount-failure-notify@%n.service
 
 [Service]
@@ -9,14 +12,16 @@ Type=oneshot
 RemainAfterExit=true
 StandardOutput=journal
 StandardError=journal
-TimeoutStopSec=5
+TimeoutStopSec=1
+KillMode=none
 # Wait up to 30 seconds for host to become reachable (15 attempts × 2 second intervals)
 # Useful for WiFi connections that take time to establish
 ExecStartPre=/bin/bash -c 'for i in {1..15}; do ping -c 1 -W 2 %REMOTE_HOST% >/dev/null 2>&1 && exit 0; echo "Waiting for network... attempt $i/15"; sleep 2; done; echo "Gave up: host unreachable after 30s"; exit 1'
 # Check if already mounted, if not then mount
 ExecStart=/bin/bash -c 'if findmnt -M %MOUNT_POINT% >/dev/null; then echo "Already mounted"; exit 0; fi; mount %MOUNT_POINT% && echo "Mount successful" || { echo "Mount failed"; exit 1; }'
-# Force lazy unmount on shutdown to prevent hanging
-ExecStop=-umount -l %MOUNT_POINT%
+# Don't try to unmount during shutdown - let the system mount unit handle it
+# Just exit immediately
+ExecStop=/bin/true
 
 [Install]
 WantedBy=default.target
