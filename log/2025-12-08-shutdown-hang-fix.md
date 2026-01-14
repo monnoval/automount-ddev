@@ -2,7 +2,8 @@
 
 **Date:** December 8, 2025  
 **Issue:** System shutdown getting stuck during NFS unmount  
-**Status:** Fixed (multiple iterations required)
+**Status:** Fixed (multiple iterations required)  
+**Update:** See [2025-12-16-shutdown-hang-fix-update.md](./2025-12-16-shutdown-hang-fix-update.md) for Dec 16-17 refinement
 
 ## Problem Description
 
@@ -88,22 +89,7 @@ Dec 08 19:56:20 systemd[1664]: automount.service: Unit process 7314 (fuser) rema
 
 **File:** `/etc/systemd/system/mnt-sites.mount.d/override.conf`
 
-```ini
-[Unit]
-# Don't wait for this during shutdown
-DefaultDependencies=no
-
-[Mount]
-# Force lazy unmount on stop
-LazyUnmount=yes
-# Only wait 5 seconds max during shutdown
-TimeoutSec=5
-```
-
-**What Each Setting Does:**
-- `DefaultDependencies=no` - Prevents blocking shutdown with default dependency ordering
-- `LazyUnmount=yes` - Forces lazy unmount (`umount -l`) which detaches filesystem immediately
-- `TimeoutSec=5` - Sets maximum 5-second timeout for unmount during shutdown
+**⚠️ NOTE:** This configuration was refined on Dec 16-17, 2025. See [2025-12-16-shutdown-hang-fix-update.md](./2025-12-16-shutdown-hang-fix-update.md) for the current working configuration and detailed explanation of the changes.
 
 ### Solution #2: automount.service Fix (User Level)
 
@@ -302,6 +288,12 @@ systemctl show mnt-sites.mount | grep -E "TimeoutUSec|LazyUnmount"
 systemctl status mnt-sites.mount
 mount | grep sites
 ```
+
+## Updates
+
+**December 16-17, 2025:** The configuration required further refinement. The `DefaultDependencies=no` setting prevented the mount from being stopped during normal shutdown, causing hangs in the final systemd-shutdown phase (after journald stops logging). See [2025-12-16-shutdown-hang-fix-update.md](./2025-12-16-shutdown-hang-fix-update.md) for complete details on the updated configuration.
+
+**December 17, 2025:** A conflicting legacy service (`unmountnfs.service`) was discovered that was also trying to manage NFS unmounting and causing permission errors during shutdown. See [2025-12-17-unmountnfs-service-conflict.md](./2025-12-17-unmountnfs-service-conflict.md) for the final resolution.
 
 ## References
 

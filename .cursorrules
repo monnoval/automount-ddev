@@ -1,0 +1,58 @@
+# Cursor AI Rules for automount-ddev Project
+
+## System File Editing Rule
+
+**CRITICAL: DO NOT edit files that require sudo privileges directly.**
+**CRITICAL: DO NOT run sudo commands - the user is the only one who can execute sudo.**
+
+Files requiring sudo include:
+- `/etc/**` (system configuration files)
+- `/usr/**` (system binaries and libraries)
+- `/var/**` (system variable data)
+- `/lib/**`, `/bin/**`, `/sbin/**` (system directories)
+- Any file owned by root or system users
+
+### When a system file needs editing or sudo command is required:
+
+1. **DO NOT** use `search_replace` or `write` tools on system files
+2. **DO NOT** run any commands with `sudo` prefix
+3. **TELL THE USER** which file needs editing with the full path
+4. **PROVIDE** the exact content or changes needed
+5. **PROVIDE** the command to run (e.g., `sudo nano /path/to/file`)
+6. **ASK USER** to make the changes themselves
+7. **VERIFY** afterwards using `cat` or `read_file` that changes were applied
+
+### Example:
+
+❌ **WRONG:**
+```
+Let me update /etc/systemd/system/mnt-sites.mount.d/override.conf for you...
+[attempts to edit system file or run sudo commands]
+```
+
+✅ **CORRECT:**
+```
+I need you to edit this system file:
+
+File: /etc/systemd/system/mnt-sites.mount.d/override.conf
+
+Please run these commands:
+sudo nano /etc/systemd/system/mnt-sites.mount.d/override.conf
+
+Replace the content with:
+[provide exact content]
+
+After saving, run:
+sudo systemctl daemon-reload
+
+Then let me know when it's done so I can verify the changes.
+```
+
+## Project-Specific Notes
+
+- This project manages systemd user services and system mount units
+- User services: `~/.config/systemd/user/` (CAN be edited directly)
+- System mount overrides: `/etc/systemd/system/*.mount.d/` (REQUIRES sudo)
+- Installation: `install.sh` deploys templates to user directories
+- Documentation: See `log/2025-12-08-shutdown-hang-fix.md` for shutdown hang troubleshooting history
+
